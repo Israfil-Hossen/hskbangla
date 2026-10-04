@@ -1,0 +1,31 @@
+# Supabase-এর ফ্রি প্রজেক্ট ৭ দিন কোনো কার্যকলাপ না থাকলে বন্ধ (pause) হয়ে যায়।
+# এই কাজটা প্রতি ২ দিনে একবার ডাটাবেসে ছোট একটা অনুরোধ পাঠায়, যাতে ক্রেতাদের লগইন কখনো বন্ধ না হয়।
+# সাথে একটা ছোট ফাইল আপডেট করে, যাতে GitHub ৬০ দিন পর এই স্বয়ংক্রিয় কাজটা বন্ধ না করে দেয়।
+name: keep-supabase-awake
+on:
+  schedule:
+    - cron: "17 3 */2 * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ping Supabase (auth + database)
+        env:
+          URL: https://ouwljfyulxnmabiqhtfa.supabase.co
+          KEY: sb_publishable_9iKa7MzHWt576hz_M12TQQ_wHUEvacf
+        run: |
+          curl -s -o /dev/null -w "auth %{http_code}\n" "$URL/auth/v1/health" -H "apikey: $KEY"
+          curl -s -o /dev/null -w "db %{http_code}\n" -X POST "$URL/rest/v1/rpc/is_admin" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
+          curl -s -o /dev/null -w "site %{http_code}\n" "https://hskbangla.israfil-crp.workers.dev/config.js"
+      - name: Heartbeat
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .heartbeat
+          git config user.name "keepalive-bot"
+          git config user.email "keepalive-bot@users.noreply.github.com"
+          git add .heartbeat
+          git commit -m "heartbeat" || exit 0
+          git push
