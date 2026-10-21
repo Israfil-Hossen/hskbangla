@@ -25,7 +25,7 @@ jobs:
         run: |
           curl -s -o /dev/null -w "auth %{http_code}\n" "$URL/auth/v1/health" -H "apikey: $KEY"
           curl -s -o /dev/null -w "db %{http_code}\n" -X POST "$URL/rest/v1/rpc/is_admin" -H "apikey: $KEY" -H "Content-Type: application/json" -d '{}'
-          curl -s -o /dev/null -w "site %{http_code}\n" "https://hskbangla.israfil-crp.workers.dev/config.js"
+          curl -s -o /dev/null -w "site %{http_code}\n" "https://hskbangla.pages.dev/config.js"
       - name: Heartbeat
         run: |
           date -u +"%Y-%m-%dT%H:%M:%SZ" > .heartbeat
